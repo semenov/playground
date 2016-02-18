@@ -151,6 +151,8 @@ class Struct {
             }
             this[key] = params[key];
         });
+
+        Object.freeze(this);
     }
 
     update(param) {
