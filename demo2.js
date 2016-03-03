@@ -116,25 +116,6 @@ function struct(conf) {
     }
 }
 
-//const User = struct({
-//    name: String,
-//    email: String,
-//    age: Number
-//});
-//
-//const bob = User({
-//    name: 'Bob',
-//    email: 'bob@example.com',
-//    age: 30
-//});
-//
-//const Post = struct({
-//    title: String,
-//    text: String,
-//    author: User
-//});
-
-
 class Struct {
     constructor(params) {
         const name = this.constructor.name;
@@ -209,6 +190,8 @@ class Post extends Struct {
         author: User
     };
 }
+
+console.log(Object.keys(Post));
 
 const post = new Post({
     title: 'Important',
