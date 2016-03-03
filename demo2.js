@@ -1,171 +1,8 @@
 'use strict';
 
-const assert = require('assert');
-
-function match(value, params) {
-    const func = params[value];
-    if (func) {
-        return func.call();
-    }
-
-    const defaultFunc = params['default'];
-    if (defaultFunc) {
-        return defaultFunc.call();
-    }
-
-}
-
-function check(value, type) {
-    if (type == String) {
-        return (typeof value == 'string');
-    }
-
-    if (type == Number) {
-        return (typeof value == 'number');
-    }
-
-    if (type == Function) {
-        return (typeof value == 'function');
-    }
-
-    if (type == Array) {
-        return (Array.isArray(value));
-    }
-
-    if (type == Object) {
-        return (Object.prototype.toString.call(value) == '[object Object]');
-    }
-
-    if (value.constructor == type) {
-        return true;
-    }
-
-    return false;
-}
-
-function typeToString(type) {
-    return match(type, {
-        [String]: () => 'String',
-        [Number]: () => 'Number',
-        [Function]: () => 'Function',
-        [Array]: () => 'Array',
-        [Object]: () => 'Object',
-        default: () => type.name || 'Unknown',
-    });
-}
-
-function assertType(value, type) {
-    if (!check(value, type)) {
-        const msg = `Expected ${type}, but got ${value}`;
-        throw new Error();
-    }
-}
-
-assert(
-    check('some string', String),
-    'String is of type String'
-);
-
-assert(
-    !check(42, String),
-    'Number is not of type String'
-);
-
-assert(
-    check(42, Number),
-    'Number is of type Number'
-);
-
-assert(
-    check(() => {}, Function),
-    'Function is of type Function'
-);
-
-assert(
-    check([], Array),
-    'Array is of type Array'
-);
-
-assert(
-    check({}, Object),
-    'Object is of type Object'
-);
-
-assert(
-    !check(null, Object),
-    'Null is not of type Object'
-);
-
-assert(
-    !check(undefined, Object),
-    'Undefined is not of type Object'
-);
-
-
-function struct(conf) {
-    assertType(conf, Object);
-    const keys = Object.keys(conf);
-    return function(params) {
-        return keys.map(key => {
-            if (!check(params[key], conf[key])) {
-                const msg = `Expected '${key}' to be of type ${typeToString(conf[key])}`;
-                throw new Error(msg);
-            }
-            return params[key];
-        });
-    }
-}
-
-class Struct {
-    constructor(params) {
-        const name = this.constructor.name;
-        const schema = this.constructor.schema;
-        if (!schema) {
-            const msg = `No schema found for structure ${name}`;
-            throw new Error(msg);
-        }
-
-        Object.keys(schema).forEach(key => {
-            if (!check(params[key], schema[key])) {
-                const msg = `Expected '${name}.${key}' to be of type ${typeToString(schema[key])}`;
-                throw new Error(msg);
-            }
-            this[key] = params[key];
-        });
-
-        Object.freeze(this);
-    }
-
-    update(param) {
-        const name = this.constructor.name;
-        const schema = this.constructor.schema;
-        let func;
-
-        if (check(param, Function)) {
-            func = param;
-        }
-
-        if (check(param, Object)) {
-            func = () => param;
-        }
-
-        if (func) {
-            const mods = func.call(null, this);
-            Object.keys(mods).forEach(key => {
-                if (schema[key] && !check(mods[key], schema[key])) {
-                    const msg = `Expected '${name}.${key}' to be of type ${typeToString(schema[key])}`;
-                    throw new Error(msg);
-                }
-            });
-
-            const data = Object.assign({}, this, mods);
-
-            return new this.constructor(data);
-        } else {
-            throw new Error('Struct update method accepts only object or function as argument');
-        }
-    }
-}
+import assert from 'assert';
+import {match, check, typeToString, assertType} from './utils';
+import Struct from './struct';
 
 class User extends Struct {
     static schema = {
@@ -210,3 +47,32 @@ const updatedPost2 = post.update(obj => ({
 }));
 
 console.log(updatedPost2);
+
+class Person extends Struct {
+  static schema = {
+    firstName: String,
+    lastName: String,
+    age: Number
+  };
+
+  get fullName() {
+    return this.firstName + this.lastName;
+  }
+}
+
+const jack = new Person({
+  firstName: 'Jack',
+  lastName: 'Black',
+  age: 35
+});
+
+console.log(jack.fullName);
+
+function List() {}
+
+class State extends Struct {
+  static schema = {
+    posts: Array
+  };
+
+}

@@ -1,0 +1,23 @@
+{
+  "name": "playground",
+  "version": "1.0.0",
+  "description": "",
+  "main": "classes.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/semenov/playground.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/semenov/playground/issues"
+  },
+  "homepage": "https://github.com/semenov/playground#readme",
+  "dependencies": {
+    "baobab": "^2.3.3",
+    "immutable": "^3.7.6"
+  }
+}
